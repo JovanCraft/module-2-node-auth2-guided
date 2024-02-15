@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const router = require('express').Router()
 const User = require('../users/users-model.js')
 
-const { BCRYPT_ROUNDS } = require('../../config')
+const { BCRYPT_ROUNDS, JWT_SECRET } = require('../../config')
 
 router.post('/register', (req, res, next) => {
   let user = req.body
@@ -33,5 +34,19 @@ router.post('/login', (req, res, next) => {
     })
     .catch(next)
 })
+
+function buildToken(user){
+  const payload = {
+    //the subject is going to be essential in every payload and it is basically what the token is about!
+    subject: user.id,
+    username: user.username,
+    role: user.role,
+  }
+  const options = {
+    expiresIn: '1d',
+  }
+  return jwt.sign(payload, JWT_SECRET, options)
+  //the 2nd thing inside of .sign is a secret string that, it others found out what the string is, they could use it to create other tokens. It should NOT BE HARDCODED
+}
 
 module.exports = router
